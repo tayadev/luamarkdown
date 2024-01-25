@@ -33,8 +33,6 @@ end
 function Markdown:parse(source)
   local document = {}
 
-  print("Start Parse")
-
   while #source > 0 do
     local match = false
     for _, element in ipairs(self.block_elements) do
@@ -92,6 +90,9 @@ function Markdown:parse(source)
       end
     end
 
+    if #result == 1 and type(result[1]) == "string" then
+      result = result[1]
+    end
     block.body = result
 
     ::continue::
@@ -107,7 +108,7 @@ function Markdown.default()
   parser:add_block_element(require "elements.block.heading") -- add === --- style heading
   parser:add_block_element(require "elements.block.blockquote")
   parser:add_block_element(require "elements.block.paragraph") -- add lazy continuation
-  parser:add_block_element(require "elements.block.list") -- add 1) style ordered lists
+  parser:add_block_element(require "elements.block.list") -- add 1) style ordered lists, DOESNT WORK CURRENTLY
   parser:add_block_element(require "elements.block.thematic_break")
   parser:add_block_element(require "elements.block.code_block") -- add indent style code blocks
 
