@@ -32,6 +32,9 @@ end
 function Markdown:parse(source)
   local document = {}
 
+  -- add newlines to the end of the file, to fix a weird bug
+  source = source .. "\n"
+
   while #source > 0 do
     local match = false
     for _, element in ipairs(self.block_elements) do
@@ -49,8 +52,13 @@ function Markdown:parse(source)
     end
     -- handle if no match
     if not match then
-      print("Skipping line, since no element matches: " .. source:match("^%s*(.-)%s*\n"))
-      source = source:gsub("^%s*(.-)%s*\n", "", 1)
+      local line = source:match("^[^\n]*\n")
+      if line then
+        source = source:gsub('^[^\n]*\n', '')
+      else
+        -- if no line, then we are at the end of the file
+        source = ""
+      end
     end
   end
 
