@@ -1,5 +1,5 @@
 local md = require "markdown".default()
-local html = require "html_renderer"
+local html = require "renderer.html_renderer"
 
 -- custom extension
 md:add_block_element{
