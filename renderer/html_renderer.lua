@@ -35,12 +35,14 @@ return function(document)
   for _, block in ipairs(document) do
     if block.type == "paragraph" then
       html = html .. "<p>" .. renderInline(block.body) .. "</p>"
-    elseif block.type == "header" then
+    elseif block.type == "heading" then
       html = html .. "<h" .. block.level .. ">" .. renderInline(block.body) .. "</h" .. block.level .. ">"
     elseif block.type == "blockquote" then
       html = html .. "<blockquote>" .. renderInline(block.body) .. "</blockquote>"
     elseif block.type == "thematic_break" then
       html = html .. "<hr>"
+    elseif block.type == "code_block" then
+      html = html .. "<pre><code>" .. block.body .. "</code></pre>"
     end
   end
 

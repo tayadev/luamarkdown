@@ -1,4 +1,3 @@
-
 ---@class Markdown
 ---@field block_elements table
 ---@field inline_elements table
@@ -33,13 +32,14 @@ end
 function Markdown:parse(source)
   local document = {}
 
-  print("Start Parse")
+  -- add newlines to the end of the file, to fix a weird bug
+  source = source .. "\n"
 
   while #source > 0 do
     local match = false
     for _, element in ipairs(self.block_elements) do
       if source:match(element.pattern) then
-        local matches = {source:match(element.pattern)}
+        local matches = { source:match(element.pattern) }
         local parsed = element.parse(matches)
         if parsed then
           parsed.type = element.name
@@ -52,8 +52,13 @@ function Markdown:parse(source)
     end
     -- handle if no match
     if not match then
-      print("Skipping line, since no element matches: " .. source:match("^%s*(.-)%s*\n"))
-      source = source:gsub("^%s*(.-)%s*\n", "", 1)
+      local line = source:match("^[^\n]*\n")
+      if line then
+        source = source:gsub('^[^\n]*\n', '')
+      else
+        -- if no line, then we are at the end of the file
+        source = ""
+      end
     end
   end
 
@@ -68,7 +73,7 @@ function Markdown:parse(source)
       local match = false
       for _, element in ipairs(self.inline_elements) do
         if source:match(element.pattern) then
-          local matches = {source:match(element.pattern)}
+          local matches = { source:match(element.pattern) }
           local parsed = element.parse(matches)
           if parsed then
             parsed.type = element.name
@@ -92,31 +97,35 @@ function Markdown:parse(source)
       end
     end
 
+    if #result == 1 and type(result[1]) == "string" then
+      result = result[1]
+    end
     block.body = result
 
     ::continue::
   end
 
   return document
-
 end
+
+local thisFolder = (...):match("(.-)[^%.]+$")
 
 function Markdown.default()
   local parser = Markdown:new()
 
-  parser:add_block_element(require "elements.block.heading") -- add === --- style heading
-  parser:add_block_element(require "elements.block.blockquote")
-  parser:add_block_element(require "elements.block.paragraph") -- add lazy continuation
-  parser:add_block_element(require "elements.block.list") -- add 1) style ordered lists
-  parser:add_block_element(require "elements.block.thematic_break")
-  parser:add_block_element(require "elements.block.code_block") -- add indent style code blocks
+  parser:add_block_element(require(thisFolder .. "elements.block.heading"))    -- add === --- style heading
+  parser:add_block_element(require(thisFolder .. "elements.block.blockquote"))
+  parser:add_block_element(require(thisFolder .. "elements.block.paragraph"))  -- add lazy continuation
+  parser:add_block_element(require(thisFolder .. "elements.block.list"))       -- add 1) style ordered lists, DOESNT WORK CURRENTLY
+  parser:add_block_element(require(thisFolder .. "elements.block.thematic_break"))
+  parser:add_block_element(require(thisFolder .. "elements.block.code_block")) -- add indent style code blocks
 
-  parser:add_inline_element(require "elements.inline.bold")
-  parser:add_inline_element(require "elements.inline.italic")
-  parser:add_inline_element(require "elements.inline.strikethrough")
-  parser:add_inline_element(require "elements.inline.image") -- also test linked images
-  parser:add_inline_element(require "elements.inline.link") -- add reference style links
-  parser:add_inline_element(require "elements.inline.code")
+  parser:add_inline_element(require(thisFolder .. "elements.inline.bold"))
+  parser:add_inline_element(require(thisFolder .. "elements.inline.italic"))
+  parser:add_inline_element(require(thisFolder .. "elements.inline.strikethrough"))
+  parser:add_inline_element(require(thisFolder .. "elements.inline.image")) -- also test linked images
+  parser:add_inline_element(require(thisFolder .. "elements.inline.link"))  -- add reference style links
+  parser:add_inline_element(require(thisFolder .. "elements.inline.code"))
 
   return parser
 end

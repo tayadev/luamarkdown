@@ -1,6 +1,18 @@
 local md = require "markdown".default()
-local pprint = require "pprint"
-local html = require "html_renderer"
+local html = require "renderer.html_renderer"
+
+-- custom extension
+md:add_block_element{
+  name = "livecode",
+  priority = 2,
+  pattern = "^%s*```(%w-)%[live%]%s*(.-)%s*```%s*",
+  parse = function(matches)
+    return {
+      lang = matches[1],
+      body = matches[2],
+    }
+  end
+}
 
 local doc = md:parse([[
 # Heading 1
@@ -33,8 +45,14 @@ Two ways for *italic* _italic_ text
 
 Inline `code`
 
+```lua[live]
+print("Hello World")
+```
+
 ]])
 
-pprint(doc)
+-- print(html(doc))
 
-print(html(doc))
+-- local terminal = require "terminal_renderer"
+
+-- terminal(doc)
