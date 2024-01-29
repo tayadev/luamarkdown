@@ -44,7 +44,7 @@ return function(document)
     elseif block.type == "list" then
       local content = ""
 
-      for _, item in ipairs(block.items) do
+      for _, item in ipairs(block.body) do
         content = content .. "<li>" .. renderInline(item.body) .. "</li>"
       end
 

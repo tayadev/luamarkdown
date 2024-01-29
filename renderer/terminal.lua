@@ -28,12 +28,16 @@ local FG_CYAN_BRIGHT = "\x1b[96m"
 local FG_WHITE_BRIGHT = "\x1b[97m"
 local FG_DEFAULT = "\x1b[39m"
 
-function parseInline(blockBody)
+local function parseInline(blockBody)
   if type(blockBody) == "string" then
     return blockBody
   end
 
   local result = ""
+
+  if blockBody.type ~= nil then
+    blockBody = { blockBody }
+  end
 
   for _, element in ipairs(blockBody) do
     if type(element) == "string" then
@@ -70,8 +74,8 @@ return function(document)
     elseif block.type == "thematic_break" then
       print(FG_MAGENTA .. '---' .. FG_DEFAULT)
     elseif block.type == "list" then
-      for _, item in ipairs(block.items) do
-        print(FG_BLUE .. '- ' .. parseInline(item) .. FG_DEFAULT)
+      for _, item in ipairs(block.body) do
+        print(FG_BLUE .. '- ' .. parseInline(item.body) .. FG_DEFAULT)
       end
     end
   end

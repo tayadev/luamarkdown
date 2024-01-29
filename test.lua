@@ -1,5 +1,4 @@
 local md = require "markdown".default()
-local html = require "renderer.html_renderer"
 
 -- custom extension
 md:add_block_element{
@@ -49,10 +48,30 @@ Inline `code`
 print("Hello World")
 ```
 
+1. Ordered list item 1
+2. Ordered *list item *
+
 ]])
 
+-- local html = require "renderer.html"
 -- print(html(doc))
 
--- local terminal = require "terminal_renderer"
+function printTable(t, indent)
+  indent = indent or 0
+  for k, v in pairs(t) do
+    if type(v) == "table" then
+      print(string.rep("  ", indent) .. k .. ":")
+      printTable(v, indent + 1)
+    else
+      print(string.rep("  ", indent) .. k .. ": " .. tostring(v))
+    end
+  end
+end
 
--- terminal(doc)
+printTable(doc)
+
+local html = require "renderer.html"
+print(html(doc))
+
+local terminal = require "renderer.terminal"
+terminal(doc)

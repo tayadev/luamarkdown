@@ -9,7 +9,6 @@ return {
     local items = {}
 
     local prefix = source:match("^%s*([%-%*%+%d%.?]+)%s*.-\n\n")
-    print(prefix)
 
     for item in source:gmatch("([^\n]+)") do
       items[#items + 1] = {
@@ -19,7 +18,7 @@ return {
     end
 
     return {
-      items = items,
+      body = items,
       list_type = prefix:match("^%d+%.") and "ordered" or "unordered"
     }
   end

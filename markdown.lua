@@ -63,47 +63,54 @@ function Markdown:parse(source)
   end
 
   -- parse inline elements
-  for _, block in ipairs(document) do
-    local source = block.body
-    if not source then
-      goto continue
-    end
-    local result = {}
-    while #source > 0 do
-      local match = false
-      for _, element in ipairs(self.inline_elements) do
-        if source:match(element.pattern) then
-          local matches = { source:match(element.pattern) }
-          local parsed = element.parse(matches)
-          if parsed then
-            parsed.type = element.name
-            table.insert(result, parsed)
-            source = source:gsub(element.pattern, "", 1)
-            match = true
-            break
+
+  -- loop over all arbitrarily nested "body" fields in document
+
+  local function recurse(document)
+    for _, block in ipairs(document) do
+      if type(block.body) == "table" then
+        recurse(block.body)
+      else
+        if type(block.body) == "string" then
+          local result = {}
+          while #block.body > 0 do
+            local match = false
+            for _, element in ipairs(self.inline_elements) do
+              if block.body:match(element.pattern) then
+                local matches = { block.body:match(element.pattern) }
+                local parsed = element.parse(matches)
+                if parsed then
+                  parsed.type = element.name
+                  table.insert(result, parsed)
+                  block.body = block.body:gsub(element.pattern, "", 1)
+                  match = true
+                  break
+                end
+              end
+            end
+
+            if not match then
+              -- consume one character
+
+              if type(result[#result]) == "string" then
+                result[#result] = result[#result] .. block.body:sub(1, 1)
+              else
+                table.insert(result, block.body:sub(1, 1))
+              end
+              block.body = block.body:sub(2)
+            end
           end
+
+          if #result == 1 then
+            result = result[1]
+          end
+          block.body = result
         end
       end
-
-      if not match then
-        -- consume one character
-
-        if type(result[#result]) == "string" then
-          result[#result] = result[#result] .. source:sub(1, 1)
-        else
-          table.insert(result, source:sub(1, 1))
-        end
-        source = source:sub(2)
-      end
     end
-
-    if #result == 1 and type(result[1]) == "string" then
-      result = result[1]
-    end
-    block.body = result
-
-    ::continue::
   end
+
+  recurse(document)
 
   return document
 end
